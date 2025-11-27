@@ -35,7 +35,7 @@ class ArticleOut(BaseModel):
     author_id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    class Config:
+    class Config:#read sql object attributes and map to pydantic
         orm_mode = True
 
 
