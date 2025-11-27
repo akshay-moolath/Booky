@@ -5,99 +5,167 @@
 </head>
 <body>
   <h2>Your Dashboard</h2><hr>
+
   <h3>Create Article</h3>
   <form id="create-article">
-    <input name="title" placeholder="Title"><br><br>
+    <input name="title" placeholder="Title" required><br><br>
     <textarea name="content" placeholder="Content" required></textarea><br><br>
-    <input name="author_name" placeholder="author_name"><br><br>
-    <button type="submit" >Create Article</button>
-  </form><hr>
+    <input name="author_name" placeholder="Author name" required><br><br>
+    <button type="submit">Create Article</button>
+  </form>
   <p id="msg"></p>
+  <hr>
+
   <button id="list-btn">List All Articles</button>
+
   <h3>Articles</h3>
   <div id="articles-list"></div>
 
-
-
-  <script>//js script starts here
-  //create article
+<script>
 const form = document.getElementById("create-article");
 const msg = document.getElementById("msg");
+const listBtn = document.getElementById("list-btn");
+const articlesList = document.getElementById("articles-list");
 
+// Create article
 form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  msg.textContent = "Creating...";
+  const payload = {
+    title: form.title.value,
+    content: form.content.value,
+    author_name: form.author_name.value
+  };
 
-    const data = {
-        title: form.title.value,
-        content: form.content.value,
-        author_name:form.author_name.value
-    };
-
+  try {
     const res = await fetch("/api/articles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
     });
-       let body;
-    try {
-        body = await res.json();
-    } catch {
-        msg.textContent = "Server returned invalid response";
-        return;
-    }
-
+    const body = await safeJson(res);
     if (res.ok) {
-        msg.textContent = "Article created successfully!";
-        form.reset();
+      msg.textContent = "Article created.";
+      form.reset();
+      loadArticles();
     } else {
-        msg.textContent = body.detail || "Failed to create article";
+      msg.textContent = body?.detail || "Create failed";
     }
-  
-
-    
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Network error";
+  }
 });
 
-
-
-
-//load articles
+// Load articles and render with Edit / Delete buttons
 async function loadArticles() {
-    const list = document.getElementById("articles-list");
-
-    const res = await fetch("/api/articles",{method :'GET'});
-    const data = await res.json();
-
-    list.innerHTML = "";  // clear before rendering
-
+  articlesList.innerHTML = "Loading...";
+  try {
+    const res = await fetch("/api/articles");
     if (!res.ok) {
-        list.textContent = "Failed to load articles";
-        return;
+      const t = await res.text().catch(()=>null);
+      articlesList.textContent = "Failed to load articles";
+      msg.textContent = t || `Error ${res.status}`;
+      return;
     }
-
-    // loop through articles and show them
+    const data = await res.json();
+    articlesList.innerHTML = "";
     data.forEach(article => {
-        const div = document.createElement("div");
-        div.style.border = "1px solid #ccc";
-        div.style.padding = "10px";
-        div.style.marginBottom = "10px";
-        
-        div.innerHTML = `
-            <h4>${article.title}</h4>
-            <p>${article.content}</p>
-            <small>Author: ${article.author_name}</small>`;
-
-        list.appendChild(div);
+      const div = document.createElement("div");
+      div.style.border = "1px solid #ccc";
+      div.style.padding = "10px";
+      div.style.marginBottom = "10px";
+      div.innerHTML = `
+        <h4>${escapeHtml(article.title)}</h4>
+        <p>${escapeHtml(article.content)}</p>
+        <small>Author: ${escapeHtml(article.author_name)}</small>
+        <div style="margin-top:8px;">
+          <button data-id="${article.id}" class="edit-btn">Edit</button>
+          <button data-id="${article.id}" class="delete-btn">Delete</button>
+        </div>
+      `;
+      articlesList.appendChild(div);
     });
+
+    // attach handlers (after elements exist)
+    articlesList.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.currentTarget.dataset.id;
+        if (!confirm("Delete this article?")) return;
+        msg.textContent = "Deleting...";
+        try {
+          const res = await fetch(`/api/articles/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            msg.textContent = "Deleted.";
+            loadArticles();
+          } else {
+            const body = await safeJson(res);
+            msg.textContent = body?.detail || "Delete failed";
+          }
+        } catch (err) {
+          console.error(err);
+          msg.textContent = "Network error";
+        }
+      });
+    });
+
+    articlesList.querySelectorAll(".edit-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const id = e.currentTarget.dataset.id;
+        // ask user for new values (simple)
+        const newTitle = prompt("New title:", "");
+        if (newTitle === null) return; // user cancelled
+        const newContent = prompt("New content:", "");
+        if (newContent === null) return;
+        const newAuthor = prompt("Author name:", "");
+        if (newAuthor === null) return;
+
+        msg.textContent = "Updating...";
+        const payload = { title: newTitle, content: newContent, author_name: newAuthor };
+        try {
+          const res = await fetch(`/api/articles/${id}`, {
+            method: "PUT",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+          });
+          const body = await safeJson(res);
+          if (res.ok) {
+            msg.textContent = "Updated.";
+            loadArticles();
+          } else {
+            msg.textContent = body?.detail || "Update failed";
+          }
+        } catch (err) {
+          console.error(err);
+          msg.textContent = "Network error";
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+    articlesList.textContent = "Failed to load articles";
+    msg.textContent = "Network error";
+  }
 }
-document.getElementById("list-btn").addEventListener("click", () => {
-    loadArticles();
 
-    form.reset();
-});
+// wire the List All Articles button
+listBtn.addEventListener("click", loadArticles);
 
+// helper: safe JSON parsing
+async function safeJson(res) {
+  try { return await res.json(); } catch { return null; }
+}
 
+// tiny escape to avoid raw HTML insertion
+function escapeHtml(s) {
+  if (!s) return "";
+  return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+// optionally load on page load (commented — user wanted button-driven)
+// loadArticles();
 </script>
-
-
 </body>
 </html>
