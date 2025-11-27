@@ -110,7 +110,7 @@
         text-decoration: underline;
     }
 
-    /* Simple text feedback (no fixed box) */
+    /* Simple text feedback */
     .msg-feedback{
       margin-top:20px;
       font-size:14px;
@@ -158,7 +158,8 @@
         <div class="row">
           <small style="color:var(--muted)">
             Don't have an account? 
-            <a href="/register">Register here</a>
+            <!-- Link pointing to the register page file -->
+            <a href="/register-page">Register here</a> 
           </small>
         </div>
 
@@ -219,7 +220,8 @@ form.addEventListener('submit', async (e) => {
       showMessage('success', 'Login successful! Redirecting...');
       
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        // Redirect to dashboard
+        window.location.href = '/dashboard'; 
       }, 500);
       
     } else {
