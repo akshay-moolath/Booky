@@ -4,6 +4,8 @@ from fastapi.responses import FileResponse
 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 
 @app.get("/")# connecting static pages to url/endpoint
