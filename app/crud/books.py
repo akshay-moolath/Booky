@@ -26,14 +26,6 @@ def create_book(payload: schemas.BookCreate, db: Session = Depends(get_db), curr
 def list_books(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.Book).filter(models.Book.user_id == current_user.id).all()
 
-# Read Single Book
-@router.get("/books/{book_id}", response_model=schemas.BookOut)
-def get_books(book_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    book = db.query(models.Book).get(book_id)
-    if not book or book.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="book not found")
-    return book
-
 # Update Book
 @router.put("/books/{book_id}", response_model=schemas.BookOut)
 def update_book(book_id: int, payload: schemas.BookCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
