@@ -13,8 +13,8 @@ class User(Base):
     password = Column(String, nullable=False) 
 
 
-class Article(Base):
-    __tablename__ = "articles"
+class Book(Base):
+    __tablename__ = "books"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
@@ -22,4 +22,4 @@ class Article(Base):
     author_name = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    #user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

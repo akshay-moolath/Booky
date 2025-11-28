@@ -80,7 +80,7 @@
     }
 
     .list {margin-top:12px;display:flex;flex-direction:column;gap:16px}
-    .article{
+    .book{
       padding:16px;
       border-radius:10px;
       background:var(--card);
@@ -92,10 +92,10 @@
       align-items:flex-start;
       transition: background 0.2s;
     }
-    .article:hover {
+    .book:hover {
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
-    .article strong { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .book strong { font-size: 1rem; font-weight: 600; color: var(--text); }
     .meta{color:var(--muted);font-size:12px;margin-top:4px}
     .controls button{margin-left:8px; padding: 8px 12px; font-size: 0.8rem; color: var(--card);}
     .controls .delete { background: var(--danger); }
@@ -147,7 +147,7 @@
       </div>
     </div>
 
-    <footer>Simple demo — No production authentication. Use this application for learning purposes.</footer>
+    
   </div>
 
 <script>
@@ -192,7 +192,7 @@ function showUser(){
 }
 showUser();
 
-// create article
+// create book
 createForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   clearMessages();
@@ -206,14 +206,14 @@ createForm.addEventListener('submit', async (e)=>{
   };
   
   try {
-    const res = await fetch('/api/articles', {
+    const res = await fetch('/api/books', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
     });
     const body = await safeJson(res);
     if (res.ok) {
-      showSuccess('Article created successfully! ✔');
+      showSuccess('Book created successfully! ✔');
       createForm.reset();
-      loadArticles();
+      loadbooks();
     } else {
       showError(body?.detail || 'Create failed'); // Use showError
     }
@@ -222,12 +222,12 @@ createForm.addEventListener('submit', async (e)=>{
   }
 });
 
-// load articles
+// load books
 async function loadbooks(){
   booklist.innerHTML = 'Loading...';
   clearMessages();
   try {
-    const res = await fetch('/api/articles');
+    const res = await fetch('/api/books');
     if (!res.ok) {
       booklist.textContent = 'Failed to load books.';
       showError('Server response error.'); // Use showError
@@ -241,7 +241,7 @@ async function loadbooks(){
     booklist.innerHTML = '';
     data.forEach(a => {
       const el = document.createElement('div');
-      el.className = 'article';
+      el.className = 'book';
       
       // Use createElement and textContent for safe rendering (XSS Protection)
       const contentDiv = document.createElement('div');
@@ -301,12 +301,12 @@ async function loadbooks(){
       btn.onclick = async (e) => {
         const id = e.currentTarget.dataset.id;
         // Using confirm() as per original logic, noting its limitations in the environment
-        if (!window.confirm(`Are you sure you want to delete article ID: ${id}?`)) return;
+        if (!window.confirm(`Are you sure you want to delete book ID: ${id}?`)) return;
         
         try {
-          const res = await fetch(`/api/articles/${id}`, { method:'DELETE' });
+          const res = await fetch(`/api/books/${id}`, { method:'DELETE' });
           if (res.ok) {
-            showSuccess(`Article ID ${id} deleted.`);
+            showSuccess(`Book ID ${id} deleted.`);
             loadbooks();
           }
           else {
@@ -331,13 +331,13 @@ async function loadbooks(){
         if (author === null) return;
 
         try {
-          const res = await fetch(`/api/articles/${id}`, {
+          const res = await fetch(`/api/books/${id}`, {
             method:'PUT', headers:{'Content-Type':'application/json'}, 
             body: JSON.stringify({title,content,author_name:author})
           });
           const b = await safeJson(res);
           if (res.ok) {
-            showSuccess(`Article ID ${id} updated.`);
+            showSuccess(`Book ID ${id} updated.`);
             loadbooks();
           }
           else showError(b?.detail || 'Update failed'); // Use showError
@@ -347,8 +347,8 @@ async function loadbooks(){
 
   } catch(err){ 
     console.error(err); 
-    booklist.textContent='Failed to load articles due to network error.'; 
-    showError('Network error during article load.'); // Use showError
+    booklist.textContent='Failed to load books due to network error.'; 
+    showError('Network error during book load.'); // Use showError
   }
 }
 
@@ -364,7 +364,7 @@ document.getElementById('logout').addEventListener('click', ()=>{
 // helpers
 async function safeJson(res){ try{return await res.json()}catch{return null} }
 
-// load articles list immediately
+// load books list immediately
 loadbooks();
 </script>
 </body>

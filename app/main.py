@@ -8,9 +8,9 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-#include article & user crud to main.py
-from app.crud.article import router 
-app.include_router(router, prefix="/api")
+#include book  & user crud to main.py
+from app.crud.books import router as book_router
+app.include_router(book_router, prefix="/api")
 from app.crud.user import router as user_router
 app.include_router(user_router, prefix="/api")
 

@@ -21,19 +21,19 @@ class LoginSchema(BaseModel):
     username: str
     password: str
 
-#article create,update,view schemas
-class ArticleBase(BaseModel):
+#book create,update,view schemas
+class BookBase(BaseModel):
     title: str
     content: str
     author_name: str
-class ArticleCreate(ArticleBase):
+class BookCreate(BookBase):
     pass
 
-class ArticleUpdate(BaseModel):
+class BookUpdate(BaseModel):
     title: str
     content: Optional[str]
 
-class ArticleOut(BaseModel):
+class BookOut(BaseModel):
     id: int
     title: str
     content: str
